@@ -8,6 +8,8 @@ import plots.lineplot as lineplot
 import plots.golden_point_plot as gp
 import indicators.EMA_code as EMA_code
 import indicators.RSI_code as RSI_code
+import indicators.MACD_code as MACD_code
+
 
 company = dd.data('DNP.WA','2024-01-01','2026-03-14','1d') 
 print(company)
@@ -91,3 +93,6 @@ ax2.axhline(30, color = "red")
 ax2.set_title("RSI")
 
 plt.show()
+
+company = MACD_code.MACD(company,12,26,9)
+print(company)
