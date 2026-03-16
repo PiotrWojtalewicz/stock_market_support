@@ -9,7 +9,7 @@ import plots.golden_point_plot as gp
 import indicators.EMA_code as EMA_code
 import indicators.RSI_code as RSI_code
 
-company = dd.data('AAPL','2014-01-01','2026-03-14','1d') 
+company = dd.data('DNP.WA','2024-01-01','2026-03-14','1d') 
 print(company)
 #company =  company[['Date','Close']]
 company = company.reset_index()
@@ -77,4 +77,17 @@ for i, rsi_value in enumerate(company["RSI_14"]):
     else:
         company.loc[i, "RSI_interpretation"] = "oversold"
 
-print(company)
+print(company) 
+
+fig, (ax1, ax2) = plt.subplots(2,1, figsize=(12,8), sharex=True)
+# wykres ceny
+ax1.plot(company["Date"], company["Close"])
+ax1.set_title("Price")
+# wykres RSI
+ax2.plot(company["Date"], company["RSI_14"])
+ax2.axhline(70, color = "green")
+ax2.axhline(50, color = "yellow")
+ax2.axhline(30, color = "red")
+ax2.set_title("RSI")
+
+plt.show()
