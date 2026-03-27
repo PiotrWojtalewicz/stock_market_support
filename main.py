@@ -13,11 +13,14 @@ import plots.macd_plot as mp
 from datetime import datetime,timedelta,date
 import plots.volatility_plot as vp
 import features.target as target
-
+from ml.train import train_model
+import sys
+print(sys.executable)
+print(sys.path)
 
 today = date.today()
 yesterday = today - timedelta(days=1)
-company = dd.data('PZU.WA','2024-01-01',yesterday,'1d') 
+company = dd.data('LPP.WA','2018-01-01',yesterday,'1d') 
 #print(company)
 #company =  company[['Date','Close']]
 company = company.reset_index()
@@ -30,6 +33,7 @@ company =  company[['Date','Close']]
 plots = lineplot.plots(company)
 plt.title("Price plot")
 plt.show()
+
 
 #SMA (simple moving average)
 company  = SMA_code.SMA(company,50)
@@ -121,3 +125,36 @@ company = target.add_target(company, 5)
 company = company.dropna()
 print(company)
 #print(company.isna().sum())
+
+#pierwsze ML
+#lista cech
+features = [
+    "SMA_50",
+    "SMA_200",
+    "EMA_50",
+    "RSI_14",
+    "MACD",
+    "MACD_signal",
+    "MACD_hist",
+    "returns",
+    "volatility"
+]
+# X = macierz cech
+X = company[features]
+
+# y = target
+y = company["target"]
+split_date = "2024-01-01"
+
+X_train = X[company["Date"] < split_date]
+X_test  = X[company["Date"] >= split_date]
+
+y_train = y[company["Date"] < split_date]
+y_test  = y[company["Date"] >= split_date]
+
+print("Train shape:", X_train.shape)
+print("Test shape:", X_test.shape)
+print("Train target distribution:\n", y_train.value_counts())
+print("Test target distribution:\n", y_test.value_counts())
+
+model = train_model(X_train, y_train, X_test, y_test)
