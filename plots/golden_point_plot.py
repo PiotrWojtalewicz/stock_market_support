@@ -16,5 +16,6 @@ def gpp (df):
     death = df[df["signal"] == -1]
     plt.scatter(golden.index, golden.iloc[:,2], marker="^", label="Golden cross")
     plt.scatter(death.index, death.iloc[:,2], marker="v", label="Death cross")
+    plt.grid(True,linestyle = '--',alpha = 0.6)
     plt.legend()
     return

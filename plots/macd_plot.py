@@ -7,7 +7,7 @@ def plot_macd(df):
     # wykres ceny
     ax1.plot(df["Date"], df["Close"])
     ax1.set_title("Price")
-
+    ax1.grid(True,linestyle = "--",alpha = 0.6)
     # MACD
     ax2.plot(df["Date"], df["MACD"], label="MACD")
     ax2.plot(df["Date"], df["MACD_signal"], label="Signal")
@@ -17,6 +17,7 @@ def plot_macd(df):
     ax2.bar(df["Date"], df["MACD_hist"], color=colors)
 
     ax2.set_title("MACD")
+    ax2.grid(True,linestyle = '--',alpha = 0.6)
     ax2.legend()
 
     plt.show()

@@ -24,6 +24,7 @@ company = dd.data('LPP.WA','2018-01-01',yesterday,'1d')
 #print(company)
 #company =  company[['Date','Close']]
 company = company.reset_index()
+#company.columns = [col[0] if isinstance(col, tuple) else col for col in company.columns]
 company =  company[['Date','Close']]
 #tickers = company.columns.levels[1][0]
 #print(tickers)
@@ -118,16 +119,21 @@ company['volatility'] = company['returns'].rolling(20).std()
 
 vp.volatility_plot(company) 
 #print(company.info())
-
+for lag in [1, 2, 3, 5]:
+    company[f"returns_lag_{lag}"] = company["returns"].shift(lag)
 #dodajemy target
 company = target.add_target(company, 5)
+
 #czyścimy dane by model mógł lepiej działać
 company = company.dropna()
 print(company)
 #print(company.isna().sum())
 
 #pierwsze ML
+
 #lista cech
+
+
 features = [
     "SMA_50",
     "SMA_200",
@@ -139,7 +145,7 @@ features = [
     "returns",
     "volatility"
 ]
-# X = macierz cech
+#X = macierz cech
 X = company[features]
 
 # y = target
