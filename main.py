@@ -25,7 +25,7 @@ company = dd.data('KRU.WA','2016-01-01',yesterday,'1d')
 #company =  company[['Date','Close']]
 company = company.reset_index()
 #company.columns = [col[0] if isinstance(col, tuple) else col for col in company.columns]
-company =  company[['Date','Close']]
+company =  company[['Date','Close','Volume']]
 #tickers = company.columns.levels[1][0]
 #print(tickers)
 #print(company)    
@@ -64,7 +64,7 @@ company.loc[
 #   ["Date","Close","SMA_50","SMA_200","signal"]
 #])
 
-#rysujemy to na wykresie (dla Apple nie ma ale dla innych spółek może już być)
+#rysujemy to na wykresie 
 gp.gpp(company)
 plt.show()
 
@@ -112,7 +112,10 @@ mp.plot_macd(company)
 
 #dodaję returns jako zwrot
 company['returns'] = company['Close'].pct_change()
-
+#dodaję volume jak wolumen czyli ile akcji zmieniło właściciela
+company['volume_change'] = company['Volume'].pct_change()
+# Opcjonalnie: Wolumen w stosunku do średniej z ostatnich 20 
+company['volume_shock'] = company['Volume'] / company['Volume'].rolling(20).mean()
 #dodaję zmienność
 company['volatility'] = company['returns'].rolling(20).std()
 #print(company)
@@ -164,4 +167,4 @@ print("Train target distribution:\n", y_train.value_counts())
 print("Test target distribution:\n", y_test.value_counts())
 
 model_random_forest = train_model_random_forest(X_train, y_train, X_test, y_test)
-model_linear_regression = train_model_linear_regression(X_train, y_train,X_test)
+model_lr, scaler_lr = train_model_linear_regression(X_train, y_train, X_test, y_test)

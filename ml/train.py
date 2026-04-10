@@ -1,8 +1,10 @@
 from sklearn.metrics import accuracy_score, classification_report
 from ml.models import get_random_forest,get_linear_regression
 import numpy as np
+from sklearn.preprocessing import StandardScaler
 
 def train_model_random_forest(X_train,y_train,X_test,y_test):
+    
     #najpierw tworze model
     model_random_forest = get_random_forest()
     #Potem trenuje model
@@ -13,10 +15,10 @@ def train_model_random_forest(X_train,y_train,X_test,y_test):
     y_pred = (y_prob > 0.3).astype(int)
    # y_pred =model.predict(X_test)
    #test progów
-    for t in [0.3,0.4,0.5]:
-        y_prob = (y_prob>t).astype(int)
+    for t in [0.3, 0.5, 0.7]:
+        current_pred = (y_prob > t).astype(int)
         print(f"\nTreshold: {t}")
-        print(classification_report(y_test,y_pred))
+        print(classification_report(y_test,current_pred))
 
 
     
@@ -32,9 +34,28 @@ def train_model_random_forest(X_train,y_train,X_test,y_test):
     print(X_train.describe())   
     return model_random_forest
 
-def train_model_linear_regression(X_train, y_train, X_test):
+def train_model_linear_regression(X_train, y_train, X_test, y_test):
+    # 1. Skalowanie - bez tego regresja kłamie
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+
+    # 2. Pobranie i trening modelu
     model_linear_regression = get_linear_regression()
-    model_linear_regression.fit(X_train, y_train)
-    y_prob = model_linear_regression.predict_proba(X_test)[:,1]
-    print(np.unique(y_prob[:20]))
-    return 
+    model_linear_regression.fit(X_train_scaled, y_train)
+
+    # 3. Predykcja prawdopodobieństw na przeskalowanych danych
+    y_prob = model_linear_regression.predict_proba(X_test_scaled)[:, 1]
+
+    # 4. Testowanie różnych progów (Thresholds)
+    print("\n--- TESTOWANIE PROGÓW DECYZYJNYCH ---")
+    for t in [0.3, 0.4, 0.5]:
+        y_test_pred = (y_prob > t).astype(int)
+        print(f"\nPróg (Threshold): {t}")
+        print(classification_report(y_test, y_test_pred))
+
+    # 5. Diagnostyka
+    print(f"\nMin prob: {y_prob.min():.4f}, Max prob: {y_prob.max():.4f}")
+
+    # 6. KLUCZ: Zwracamy model i skaler do main.py
+    return model_linear_regression, scaler
