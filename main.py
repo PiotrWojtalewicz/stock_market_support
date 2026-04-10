@@ -13,14 +13,14 @@ import plots.macd_plot as mp
 from datetime import datetime,timedelta,date
 import plots.volatility_plot as vp
 import features.target as target
-from ml.train import train_model
+from ml.train import train_model_random_forest,train_model_linear_regression
 import sys
 print(sys.executable)
 print(sys.path)
 
 today = date.today()
 yesterday = today - timedelta(days=1)
-company = dd.data('LPP.WA','2018-01-01',yesterday,'1d') 
+company = dd.data('KRU.WA','2016-01-01',yesterday,'1d') 
 #print(company)
 #company =  company[['Date','Close']]
 company = company.reset_index()
@@ -98,9 +98,9 @@ ax1.plot(company["Date"], company["Close"])
 ax1.set_title("Price")
 # wykres RSI
 ax2.plot(company["Date"], company["RSI_14"])
-ax2.axhline(70, color = "green")
+ax2.axhline(70, color = "red")
 ax2.axhline(50, color = "yellow")
-ax2.axhline(30, color = "red")
+ax2.axhline(30, color = "green")
 ax2.set_title("RSI")
 
 plt.show()
@@ -163,4 +163,5 @@ print("Test shape:", X_test.shape)
 print("Train target distribution:\n", y_train.value_counts())
 print("Test target distribution:\n", y_test.value_counts())
 
-model = train_model(X_train, y_train, X_test, y_test)
+model_random_forest = train_model_random_forest(X_train, y_train, X_test, y_test)
+model_linear_regression = train_model_linear_regression(X_train, y_train,X_test)
