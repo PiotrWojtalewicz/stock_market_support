@@ -15,17 +15,22 @@ import plots.volatility_plot as vp
 import features.target as target
 from ml.train import train_model_random_forest,train_model_linear_regression
 import sys
+import indicators.Candle_Body_Strength_code as cbs
+import indicators.volume_shock_code as vsc
+import plots.corr_heatmap as ch
 print(sys.executable)
 print(sys.path)
 
 today = date.today()
 yesterday = today - timedelta(days=1)
-company = dd.data('KRU.WA','2016-01-01',yesterday,'1d') 
+company = dd.data('LPP.WA','2016-01-01',yesterday,'1d') 
 #print(company)
 #company =  company[['Date','Close']]
+if isinstance(company.columns, pd.MultiIndex):
+    company.columns = company.columns.get_level_values(0)
 company = company.reset_index()
 #company.columns = [col[0] if isinstance(col, tuple) else col for col in company.columns]
-company =  company[['Date','Close','Volume']]
+company =  company[['Date','Close','Volume','Low','High']]
 #tickers = company.columns.levels[1][0]
 #print(tickers)
 #print(company)    
@@ -42,7 +47,9 @@ company  = SMA_code.SMA(company,50)
 
 company  = SMA_code.SMA(company,200)
 #print(company )
-
+#new features
+company["volume_shock"] = vsc.volume_shock(company,20)
+company["candle_strength"] = cbs.candle_body_strength(company)
 # death/golden cross - moment przecięcia SMA50 vs SMA200
 company["signal"] = 0
 
@@ -130,41 +137,54 @@ company = target.add_target(company, 5)
 #czyścimy dane by model mógł lepiej działać
 company = company.dropna()
 print(company)
-#print(company.isna().sum())
+print(company.isna().sum())
 
 #pierwsze ML
 
 #lista cech
 
 
-features = [
-    "SMA_50",
-    "SMA_200",
-    "EMA_50",
-    "RSI_14",
-    "MACD",
-    "MACD_signal",
-    "MACD_hist",
-    "returns",
-    "volatility"
-]
+#features = [
+    #"SMA_50",
+    #"SMA_200",
+    #"EMA_50",
+    #"RSI_14",
+    #"MACD",
+    #"MACD_signal",
+   # "MACD_hist",
+  #  "returns",
+ #   "volatility",
+#    "volume_shock",
+#    "candle_strength"
+#]
 #X = macierz cech
-X = company[features]
+#X = company[features]
 
 # y = target
-y = company["target"]
-split_date = "2024-01-01"
+#y = company["target"]
+#split_date = "2024-01-01"
 
-X_train = X[company["Date"] < split_date]
-X_test  = X[company["Date"] >= split_date]
+#X_train = X[company["Date"] < split_date]
+#X_test  = X[company["Date"] >= split_date]
 
-y_train = y[company["Date"] < split_date]
-y_test  = y[company["Date"] >= split_date]
+#y_train = y[company["Date"] < split_date]
+#y_test  = y[company["Date"] >= split_date]
 
-print("Train shape:", X_train.shape)
-print("Test shape:", X_test.shape)
-print("Train target distribution:\n", y_train.value_counts())
-print("Test target distribution:\n", y_test.value_counts())
+#print("Train shape:", X_train.shape)
+#print("Test shape:", X_test.shape)
+#print("Train target distribution:\n", y_train.value_counts())
+#print("Test target distribution:\n", y_test.value_counts())
+#company = company.dropna()
+#model_random_forest = train_model_random_forest(X_train, y_train, X_test, y_test)
+#model_lr, scaler_lr = train_model_linear_regression(X_train, y_train, X_test, y_test)
+#budowanie korelacji i heatmapy
+company['volume_shock_lag1'] = company['volume_shock'].shift(1)
+features_to_check = ['volume_shock', 'candle_strength', 'RSI_14', 
+    'volatility', 'returns', 'target','volume_shock_lag1']
+correlation_matrix = company[features_to_check].corr()
+print(correlation_matrix)
 
-model_random_forest = train_model_random_forest(X_train, y_train, X_test, y_test)
-model_lr, scaler_lr = train_model_linear_regression(X_train, y_train, X_test, y_test)
+plotsv2=ch.correlation_heatmap(correlation_matrix)
+
+# Różnica między szybką a wolną średnią (w procentach)
+company['sma_spread'] = (company['SMA_50'] - company['SMA_200']) / company['SMA_200']

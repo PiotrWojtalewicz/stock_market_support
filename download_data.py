@@ -10,8 +10,9 @@ def data (ticker,start_date,end_date,interval):
         start= start_date,
         end =end_date,
         interval= interval
-        
-    )
+          )
+    if company.empty:
+        raise ValueError ("Brak danych dla wybranej spółki")
     return company
 
 
