@@ -10,7 +10,7 @@ import indicators.EMA_code as EMA_code
 import indicators.RSI_code as RSI_code
 import indicators.MACD_code as MACD_code
 import plots.macd_plot as mp
-from datetime import datetime,timedelta,date
+
 import plots.volatility_plot as vp
 import features.target as target
 from ml.train import train_model_random_forest,train_model_linear_regression
@@ -18,22 +18,16 @@ import sys
 import indicators.Candle_Body_Strength_code as cbs
 import indicators.volume_shock_code as vsc
 import plots.corr_heatmap as ch
+import date as d
 print(sys.executable)
 print(sys.path)
+import input_user as it
+#wyciągnięcie spółki
 
-today = date.today()
-yesterday = today - timedelta(days=1)
-company = dd.data('LPP.WA','2016-01-01',yesterday,'1d') 
-#print(company)
-#company =  company[['Date','Close']]
-if isinstance(company.columns, pd.MultiIndex):
-    company.columns = company.columns.get_level_values(0)
-company = company.reset_index()
-#company.columns = [col[0] if isinstance(col, tuple) else col for col in company.columns]
-company =  company[['Date','Close','Volume','Low','High']]
-#tickers = company.columns.levels[1][0]
-#print(tickers)
-#print(company)    
+
+#ticker= input().upper()
+company = dd.data(it.ticker,it.start_date,d.yesterday,'1d') 
+
 
 #wykres 
 plots = lineplot.plots(company)
@@ -42,10 +36,9 @@ plt.show()
 
 
 #SMA (simple moving average)
-company  = SMA_code.SMA(company,50)
+company  = SMA_code.add_sma(company,50)
 #print(company)
-
-company  = SMA_code.SMA(company,200)
+company  = SMA_code.add_sma(company,200)
 #print(company )
 #new features
 company["volume_shock"] = vsc.volume_shock(company,20)
@@ -188,3 +181,8 @@ plotsv2=ch.correlation_heatmap(correlation_matrix)
 
 # Różnica między szybką a wolną średnią (w procentach)
 company['sma_spread'] = (company['SMA_50'] - company['SMA_200']) / company['SMA_200']
+
+#najlepsze zmienne do modelu 
+
+features_to_model = ['sma_spread', 'RSI_14','volume_shock','volatility_ratio','candle_strength', 'returns_lag_1','MACD_hist','std_5']
+print=(features_to_model)

@@ -5,4 +5,4 @@ def add_target(df,days):
     df["target"] = (df["future_return"] > 0.02).astype(int)
 
     return df
- 
+    

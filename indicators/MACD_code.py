@@ -1,8 +1,4 @@
-import pandas as pd 
-import numpy as np
-import yfinance as yf
-import matplotlib.pyplot as plt
-import download_data as dd
+
 
 def MACD(df,fast,slow,signal):
     df["EMA_fast"] = df["Close"].ewm(span = fast).mean()
